@@ -1,6 +1,6 @@
 {
   "name": "transformer-conversion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "transformer conversion",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "lodash.isstring": "^2.4.1",
     "lodash.map": "^2.4.1",
     "lodash.zip": "^2.4.1",
-    "string": "^1.8.1",
     "xtend": "^3.0.0"
-  }
+  },
+  "devDependencies": {}
 }
