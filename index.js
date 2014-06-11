@@ -1,4 +1,5 @@
 var isString = require('lodash.isstring')
+var extend = require('xtend')
 var map = require('lodash.map')
 var zip = require('lodash.zip')
 var Type = require('transformer-type');
