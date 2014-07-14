@@ -4,7 +4,6 @@ var map = require('lodash.map')
 var zip = require('lodash.zip')
 var Type = require('transformer-type');
 var Object = Type.Object;
-var Value = require('./value');
 var defer = require('./defer');
 
 module.exports = Conversion
@@ -30,9 +29,8 @@ var conversion_defaults = {
 
 // Implementation Details:
 // new Conversion(...) returns a function that:
-// - can be applied to a 'Value'
-// - has information regarding the real conversion.
-
+// - can be applied to a value
+// - has information regarding the types it converts between
 
 
 function Conversion(inType, outType, func, src) {
@@ -146,28 +144,19 @@ Conversion.path = function conversionPath(types) {
   });
 }
 
-Conversion.valueWrap = function(conversion) {
-  if (conversion.async)
-    return Value.wrapAsync(conversion.inType, conversion);
-  else
-    return Value.wrapSync(conversion.inType, conversion);
-}
-
-// expose Value
-Conversion.Value = Value
-
-function convertSyncWrap(func, outType) {
+function convertSyncWrap(func) {
   if (func.length != 1) {
     throw new Error('sync conversion '+ func.id
       + ' should take 1 arg (input):\n' + func);
   }
 
-  return function (input) {
-    return new Value(outType, func(input.value));
+  // simple application
+  return function() {
+    return func.apply(this, arguments);
   }
 }
 
-function convertAsyncWrap(func, outType) {
+function convertAsyncWrap(func) {
   if (func.length != 2) {
     throw new Error('async conversion '+ func.id
       + ' should take 2 args (input, callback):\n' + func);
@@ -177,7 +166,7 @@ function convertAsyncWrap(func, outType) {
     if (!callback)
       throw new Error('Callback required. Async conversion ' + func.id);
 
-    func(input.value, function(err, output) {
+    func(input, function(err, output) {
       // want to defer here, because user may not.
       if (err) {
         e = 'transformer conversion error in ' + func.id + '.\n'
@@ -188,7 +177,7 @@ function convertAsyncWrap(func, outType) {
         }
         defer(callback, new Error(e + err.toString()));
       } else {
-        defer(callback, null, new Value(outType, output));
+        defer(callback, null, output);
       }
     });
 
